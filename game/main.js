@@ -1,4 +1,4 @@
-var windowScale, currentX, currentY;
+var windowScale, currentX, currentY, maxX, maxY;
 var speed = 80;
 var userShip;
 var backgroundStars;
@@ -10,6 +10,7 @@ function setup() {
   rectMode(CENTER);
   imageMode(CENTER);
   textAlign(CENTER, CENTER);
+  angleMode(DEGREES);
   mainCanvas.parent('sketch-holder');
   createBackground(20);
   reset();
@@ -17,12 +18,12 @@ function setup() {
 }
 
 function reset() {
-  userShip = new Ship("user",-600,0);
+  userShip = new Ship("user", -600, 0);
 }
 
 /****************************** Create *******************************/
 
-function create2DArray(rows,cols) {
+function create2DArray(rows, cols) {
   var tmp = new Array(rows);
   for (i = 0; i < rows; i++) {
     tmp[i] = new Array(cols);
@@ -31,29 +32,29 @@ function create2DArray(rows,cols) {
 }
 
 function createBackground(stars) {
-  backgroundStars = create2DArray(stars,2);
-  stroke(255,255,0);
+  backgroundStars = create2DArray(stars, 2);
+  stroke(255, 255, 0);
   scaleStrokeWeight(5);
 
   for (i = 0; i < backgroundStars.length; i++) {
-    backgroundStars[i][0] = random(-80,80) * 10;
-    backgroundStars[i][1] = random(-36,36) * 10;
+    backgroundStars[i][0] = random(-80, 80) * 10;
+    backgroundStars[i][1] = random(-36, 36) * 10;
   }
 }
 
 /****************************** Main *******************************/
 
 function draw() {
-  background(200,200,200);
+  background(200, 200, 200);
   translate(width / 2, height / 2);
 
   drawBackground();
-  drawHealth();
+  //drawHealth();
   drawControls();
   drawShip();
+  drawFire();
 
-  checkInput();
-
+  fill(255);
 }
 
 
@@ -62,14 +63,14 @@ function draw() {
 function drawBackground() {
   noStroke();
   fill(0);
-  scaleRect(0,0,1600,720,0);
-  fill(255,255,0);
+  scaleRect(0, 0, 1600, 720, 0);
+  fill(255, 255, 0);
   for (i = 0; i < backgroundStars.length; i++) {
     backgroundStars[i][0] -= (speed / 40);
     if (backgroundStars[i][0] < -800) {
       backgroundStars[i][0] += 1600;
-    }  
-    scaleEllipse(backgroundStars[i][0],backgroundStars[i][1],5,5);
+    }
+    scaleEllipse(backgroundStars[i][0], backgroundStars[i][1], 5, 5);
   }
 }
 
@@ -77,45 +78,45 @@ function drawHealth() {
   noStroke();
   fill(0);
   scaleTextSize(40);
-  scaleText("Engine",-600,-500);
-  scaleText(userShip.engineHealth+"%",-600,-400);
-  scaleText("Shield",-300,-500);
-  scaleText(userShip.shieldHealth+"%",-300,-400);
-  scaleText("Ship Health",0,-500);
-  scaleText(userShip.health+"%",-0,-400);
-  scaleText("Generator",300,-500);
-  scaleText(userShip.energyHealth+"%",300,-400);
-  scaleText("Weapons",600,-500);
-  scaleText(userShip.weaponHealth+"%",600,-400);
+  scaleText("Engine", -600, -500);
+  scaleText(userShip.engineHealth + "%", -600, -400);
+  scaleText("Shield", -300, -500);
+  scaleText(userShip.shieldHealth + "%", -300, -400);
+  scaleText("Ship Health", 0, -500);
+  scaleText(userShip.health + "%", -0, -400);
+  scaleText("Generator", 300, -500);
+  scaleText(userShip.energyHealth + "%", 300, -400);
+  scaleText("Weapons", 600, -500);
+  scaleText(userShip.weaponHealth + "%", 600, -400);
 
   rectMode(CORNER);
-  fill(255,25,255);
-  scaleRect(-725,-462.5,2.5*userShip.engineHealth,25,20);
-  fill(0,100,255);
-  scaleRect(-425,-462.5,2.5*userShip.shieldHealth,25,20);
-  fill(255,0,0);
-  scaleRect(-125,-462.5,2.5*userShip.health,25,20);
-  fill(255,255,25);
-  scaleRect(175,-462.5,2.5*userShip.energyHealth,25,20);
-  fill(255,125,25);
-  scaleRect(475,-462.5,2.5*userShip.weaponHealth,25,20);
+  fill(255, 25, 255);
+  scaleRect(-725, -462.5, 2.5 * userShip.engineHealth, 25, 20);
+  fill(0, 100, 255);
+  scaleRect(-425, -462.5, 2.5 * userShip.shieldHealth, 25, 20);
+  fill(255, 0, 0);
+  scaleRect(-125, -462.5, 2.5 * userShip.health, 25, 20);
+  fill(255, 255, 25);
+  scaleRect(175, -462.5, 2.5 * userShip.energyHealth, 25, 20);
+  fill(255, 125, 25);
+  scaleRect(475, -462.5, 2.5 * userShip.weaponHealth, 25, 20);
   rectMode(CENTER);
 
   noFill();
   stroke(0);
   scaleStrokeWeight(5);
-  scaleRect(-600,-450,250,25,20); // Engine
-  scaleRect(-300,-450,250,25,20); // Shield
-  scaleRect(0,-450,250,25,20); // Main
-  scaleRect(300,-450,250,25,20); // Energy
-  scaleRect(600,-450,250,25,20); // Weapons
+  scaleRect(-600, -450, 250, 25, 20); // Engine
+  scaleRect(-300, -450, 250, 25, 20); // Shield
+  scaleRect(0, -450, 250, 25, 20); // Main
+  scaleRect(300, -450, 250, 25, 20); // Energy
+  scaleRect(600, -450, 250, 25, 20); // Weapons
 }
 
 function drawControls() {
-  fill(255,255,0);
+  fill(255, 255, 0);
   noStroke();
   scaleTextSize(20);
-  scaleText("Y Accel: "+userShip.yAccel+" Y Vel: "+round(userShip.yVel * 1000) / 1000,0,-350);
+  scaleText("FPS: "+round(frameRate())+"     AVR FPS: "+round(frameCount/(millis()/1000))+"     Y Accel: " + userShip.yAccel + "     Y Vel: " + round(userShip.yVel * 1000) / 1000, 0, -350);
 
 }
 
@@ -123,22 +124,47 @@ function drawShip() {
   userShip.draw();
 }
 
+function drawFire() {
+  if (userShip.firing) {
+
+  }
+}
+
 
 
 /****************************** Inputs *******************************/
 
-function checkInput() {
-  if (mouseIsPressed) {
-      getCoords();
-      console.log(currentX,currentY);
-      stroke(255,125,25);
-      scaleLine(currentX,currentY,userShip.x+userShip.w/2,userShip.y);
+function clicked() {
+  if (userShip.firing) {
+    return
   }
+  getCoords();
+  userShip.firing = true;
+  setTimeout(function () {
+    userShip.firing = false;
+  }, 400)
 }
 
 function getCoords() {
-  currentX = constrain(round(mouseX * 1 / windowScale - 960),-800,800);
-  currentY = constrain(round(mouseY * 1 / windowScale - 540),-360,360);
+  currentX = constrain(round(mouseX * 1 / windowScale - 960), -800, 800);
+  currentY = constrain(round(mouseY * 1 / windowScale - 540), -360, 360);
+  var newX = currentX - userShip.fireX;
+  var newY = currentY - userShip.fireY;
+  var fireAngle = atan(newY/newX);
+  if (newX < 0) {
+    fireAngle += 180;
+  }
+  var iX = userShip.fireX;
+  var iY = userShip.fireY;
+  var r = 0;
+  while (iX >= -800 && iX <= 800 && iY >= -360 && iY <= 360) {
+    iX = r * cos(fireAngle) + userShip.fireX;
+    iY = r * sin(fireAngle) + userShip.fireY;
+    r += 1;
+  }
+  maxX = iX;
+  maxY = iY;
+  console.log(newX,newY,fireAngle);
 }
 
 
@@ -147,9 +173,9 @@ function getCoords() {
 
 function move(dir) {
   if (dir == 'up') {
-    userShip.yAccel = -speed/1000;
+    userShip.yAccel = -speed / 1000;
   } else if (dir == 'down') {
-    userShip.yAccel = speed/1000;
+    userShip.yAccel = speed / 1000;
   } else if (dir == 'end') {
     userShip.yAccel = 0;
   }
@@ -231,6 +257,8 @@ class Ship {
     this.y = y;
     this.w = 200;
     this.h = 100;
+    this.fireX = this.x+this.w/2;
+    this.fireY = this.y;
     this.sW = this.w * 1.5;
     this.sH = this.h * 1.5;
     this.yVel = 0;
@@ -240,40 +268,49 @@ class Ship {
     this.weaponHealth = 100;
     this.energyHealth = 100;
     this.engineHealth = 100;
+    this.firing = false;
   }
 
   draw() {
     this.update();
     noStroke()
 
-    fill(0,100,255); // rear engines
-    scaleRect(this.x-this.w/2.05,this.y+this.h/4,this.h/4,this.h/4,this.h/10);
-    scaleRect(this.x-this.w/2.05,this.y-this.h/4,this.h/4,this.h/4,this.h/10);
+    fill(0, 100, 255); // rear engines
+    scaleRect(this.x - this.w / 2.05, this.y + this.h / 4, this.h / 4, this.h / 4, this.h / 10);
+    scaleRect(this.x - this.w / 2.05, this.y - this.h / 4, this.h / 4, this.h / 4, this.h / 10);
 
     if (this.yAccel > 0) { //
-      scaleRect(this.x-this.w/4,this.y-this.h/2.1,this.h/4,this.h/4,this.h/10);
-      scaleRect(this.x+this.w/4,this.y-this.h/2.1,this.h/4,this.h/4,this.h/10);
-    } else if(this.yAccel < 0) {
-      scaleRect(this.x-this.w/4,this.y+this.h/2.1,this.h/4,this.h/4,this.h/10);
-      scaleRect(this.x+this.w/4,this.y+this.h/2.1,this.h/4,this.h/4,this.h/10);
+      scaleRect(this.x - this.w / 4, this.y - this.h / 2.1, this.h / 4, this.h / 4, this.h / 10);
+      scaleRect(this.x + this.w / 4, this.y - this.h / 2.1, this.h / 4, this.h / 4, this.h / 10);
+    } else if (this.yAccel < 0) {
+      scaleRect(this.x - this.w / 4, this.y + this.h / 2.1, this.h / 4, this.h / 4, this.h / 10);
+      scaleRect(this.x + this.w / 4, this.y + this.h / 2.1, this.h / 4, this.h / 4, this.h / 10);
     }
 
-    fill(200,200,200); // main body
-    scaleRectCurve(this.x,this.y,this.w,this.h,this.h/10,this.h/2,this.h/2,this.h/10);
-    scaleEllipse(this.x+this.w/5,this.y,this.w,this.h);
+    fill(200, 200, 200); // main body
+    scaleRectCurve(this.x, this.y, this.w, this.h, this.h / 10, this.h / 2, this.h / 2, this.h / 10);
+    scaleEllipse(this.x + this.w / 5, this.y, this.w, this.h);
 
-    if(this.shieldHealth > 0) {
+    if (this.shieldHealth > 0) {
       noFill();
       scaleStrokeWeight(2);
-      stroke(0,100,255);
-      scaleEllipse(this.x,this.y,this.sW,this.sH);
+      stroke(0, 100, 255);
+      scaleEllipse(this.x, this.y, this.sW, this.sH);
+    }
+
+    if (this.firing) {
+      stroke(255, 125, 25);
+
+      scaleLine(maxX, maxY, this.fireX, this.fireY);
     }
 
   }
 
   update() {
+    this.fireX = this.x+this.w/2;
+    this.fireY = this.y;
     this.yVel += this.yAccel;
-    this.y += this.yVel/2;
+    this.y += this.yVel / 2;
     if (this.shieldHealth == 0) {
       this.sW = this.w;
       this.sH = this.h;
@@ -290,8 +327,8 @@ class Ship {
   }
 
   checkCollision() {
-    if (this.y + this.sH / 2 >= 360 || this.y - this.sH / 2  <= -360) {
-      if(this.shieldHealth > 0) {
+    if (this.y + this.sH / 2 >= 360 || this.y - this.sH / 2 <= -360) {
+      if (this.shieldHealth > 0) {
         this.shieldHealth -= 60;
       } else {
         this.health -= 10;

@@ -7,6 +7,8 @@ html, body {
     background-color: rgb(200,200,200);
 }
 
+textarea, select, input, button { outline: none; }
+
 .sketch-holder-norm {
     overflow: hidden;
     position: relative;
@@ -47,6 +49,9 @@ html, body {
 }
 
 .control-y {
+    padding: 0;
+    margin: 0;
+    -webkit-appearance: none;
     left: 1vw;
     width: 6vw;
     height: 29vh;
@@ -61,4 +66,14 @@ html, body {
 
 #ship-down {
     top: 51vh;
+}
+
+#weapon-target {
+    -webkit-appearance: none;
+    top: 16vh;
+    left: 9vw;
+    width: 82vw;
+    height: 66vh;
+    background: none;
+    border: none;
 }
