@@ -5,6 +5,7 @@
     <script src="game/main.js"></script>
     <link rel="stylesheet" href="game/main.css" type="text/css">
     <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
 </head>
 <body oncontextmenu="return false">
     <div id="sketch-holder" style="padding: 0; margin: 0;">
@@ -15,5 +16,15 @@
         <input type="button" value="&#9650" id="ship-up" class="control-y" onmousedown="move(userShip,'up')" onmouseup="move(userShip,'end')" onmouseout="move(userShip,'end')" ontouchstart="move(userShip,'up')" ontouchend="move(userShip,'end')">
         <input type="button" value="&#9660" id="ship-down" class="control-y" onmousedown="move(userShip,'down')" onmouseup="move(userShip,'end')" onmouseout="move(userShip,'end')" ontouchstart="move(userShip,'down')" ontouchend="move(userShip,'end')">
     </div>
+
+    <script>
+        window.addEventListener("load",function() {
+            // Set a timeout...
+            setTimeout(function(){
+                // Hide the address bar!
+                window.scrollTo(0, 1);
+            }, 0);
+        });
+    </script>
 </body>
 </html>

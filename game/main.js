@@ -2,7 +2,7 @@ var windowScale, currentX, currentY, maxX, maxY, newX, newY, fireAngle;
 var speed = 80;
 var userShip, enemyShip;
 var backgroundStars;
-var maxExplode = 100, explodeCount = 200;
+var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
 
 var hitBoxes = false;
 /****************************** Setups *******************************/
@@ -58,33 +58,12 @@ function draw() {
   drawControls();
   drawShip();
   drawHitBoxes();
-  drawExplode(enemyShip.x,enemyShip.y);
 
+  whoExplode();
 }
 
 
 /****************************** Draws *******************************/
-
-function drawExplode(x,y) {
-  noStroke();
-  if (explodeCount < maxExplode) {
-    for (i = 0; i < explodeCount; i++) {
-      noFill();
-      stroke(255, i * 5, 0);
-      scaleStrokeWeight(5);
-      scaleEllipse(x, y, (explodeCount- i) * 3, (explodeCount- i) * 3);
-    }
-    explodeCount+= 10;
-  } else if (explodeCount < maxExplode * 2) {
-    for (i = 0; i < explodeCount; i++) {
-      noFill();
-      stroke(255, i * 5, 0, 500 - (explodeCount* 255 / maxExplode));
-      scaleStrokeWeight(5);
-      scaleEllipse(x, y, (explodeCount- i) * 3, (explodeCount- i) * 3);
-    }
-    explodeCount += 10;
-  }
-}
 
 function drawBackground() {
   noStroke();
@@ -136,6 +115,27 @@ function drawHealth() {
   scaleRect(0, -450, 250, 25, 20); // Main
   scaleRect(300, -450, 250, 25, 20); // Energy
   scaleRect(600, -450, 250, 25, 20); // Weapons
+}
+
+function drawExplode(x, y) {
+  noStroke();
+  if (explodeCount < maxExplode) {
+    for (i = 0; i < explodeCount; i++) {
+      noFill();
+      stroke(255, i * 5, 0);
+      scaleStrokeWeight(5);
+      scaleEllipse(x, y, (explodeCount - i) * 3, (explodeCount - i) * 3);
+    }
+    explodeCount += 10;
+  } else if (explodeCount < maxExplode * 2) {
+    for (i = 0; i < explodeCount; i++) {
+      noFill();
+      stroke(255, i * 5, 0, 500 - (explodeCount * 255 / maxExplode));
+      scaleStrokeWeight(5);
+      scaleEllipse(x, y, (explodeCount - i) * 3, (explodeCount - i) * 3);
+    }
+    explodeCount += 10;
+  }
 }
 
 function drawControls() {
@@ -229,14 +229,26 @@ function checkEnemyHit(x, y) {
 /****************************** Other *******************************/
 
 function killShip(ship) {
-  console.log("oighs",ship,896);
+  console.log("oighs", ship, 896);
   if (ship == "enemy") {
-    setTimeout(function() {
+    setTimeout(function () {
       enemyShip = new Ship("enemy", 1500, 0);
-    },600)
+    }, 600)
+  } else if (ship == "user") {
+    setTimeout(function () {
+      userShip = new Ship("user", -1500, 0);
+    }, 600)
   }
 }
 
+function whoExplode() {
+  if (enemyShip.exploding) {
+    drawExplode(enemyShip.x, enemyShip.y);
+  }
+  if (userShip.exploding) {
+    drawExplode(userShip.x, userShip.y);
+  }
+}
 
 
 /****************************** Buttons *******************************/
@@ -348,6 +360,7 @@ class Ship {
     this.damageTicks = 0;
     this.explodeCount = -10;
     this.exploding = false;
+    console.log("New Ship:", this.name, this);
   }
 
   draw() {
@@ -359,7 +372,7 @@ class Ship {
       scaleRect(this.x - this.w / 2.05, this.y + this.h / 4, this.h / 4, this.h / 4, this.h / 10);
       scaleRect(this.x - this.w / 2.05, this.y - this.h / 4, this.h / 4, this.h / 4, this.h / 10);
 
-      if (this.yAccel > 0) { //
+      if (this.yAccel > 0) { // side engines
         scaleRect(this.x - this.w / 4, this.y - this.h / 2.1, this.h / 4, this.h / 4, this.h / 10);
         scaleRect(this.x + this.w / 4, this.y - this.h / 2.1, this.h / 4, this.h / 4, this.h / 10);
       } else if (this.yAccel < 0) {
@@ -371,13 +384,28 @@ class Ship {
       scaleRectCurve(this.x, this.y, this.w, this.h, this.h / 10, this.h / 2, this.h / 2, this.h / 10);
       scaleEllipse(this.x + this.w / 5, this.y, this.w, this.h);
 
-      fill(0);
+      fill(0); // labels
       noStroke();
       scaleTextSize(20);
       if (this.name != "user") {
         scaleText(this.name, this.x, this.y - this.h / 4);
       }
-      scaleText(this.shieldHealth + "  " + this.health, this.x, this.y + this.h / 4);
+      scaleText(this.shieldHealth, this.x - this.w / 5, this.y + this.h / 4);
+      scaleText(this.health, this.x + this.w / 5, this.y + this.h / 4);
+
+      rectMode(CORNER);
+      noStroke();
+      fill(0, 100, 255);
+      scaleRect(this.x - this.w / 3, this.y - this.h / 20, this.w / 4 * this.shieldHealth / 100, this.h / 10, this.h / 4);
+      fill(255, 0, 0);
+      scaleRect(this.x + this.w / 12, this.y-this.h/20, this.w / 4 * this.health / 100, this.h / 10, this.h / 4);
+      rectMode(CENTER);
+
+      noFill();
+      scaleStrokeWeight(2);
+      stroke(0);
+      scaleRect(this.x - this.w / 5, this.y, this.w / 4, this.h / 10, this.h / 4); // shield health bar
+      scaleRect(this.x + this.w / 5, this.y, this.w / 4, this.h / 10, this.h / 4); // ship health bar
 
       if (this.shieldHealth > 0) {
         noFill();
@@ -395,7 +423,7 @@ class Ship {
   }
 
   update() {
-    if (this.name = "enemy") {
+    if (this.name == "enemy") {
       if (this.y > 200) {
         move(enemyShip, 'up');
       } else {
@@ -443,7 +471,7 @@ class Ship {
       if (this.shieldHealth > 0) {
         this.shieldHealth -= 60;
       } else {
-        this.health -= 10;
+        this.health -= 40;
       }
       return true
     } else {
@@ -481,7 +509,7 @@ class Ship {
   damage(num, time) {
     this.damagePF = round((num / (.4 * frameRate())) / 2);
     this.damageTicks = round(frameRate() * .4) / 2;
-    console.log("Damage",this.damagePF,this.damageTicks);
+    console.log("Damage", this.damagePF, this.damageTicks);
   }
 
   kill() {
