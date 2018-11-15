@@ -15,6 +15,11 @@
 
         <input type="button" value="&#9650" id="ship-up" class="control-y" onmousedown="move(userShip,'up')" onmouseup="move(userShip,'end')" onmouseout="move(userShip,'end')" ontouchstart="move(userShip,'up')" ontouchend="move(userShip,'end')">
         <input type="button" value="&#9660" id="ship-down" class="control-y" onmousedown="move(userShip,'down')" onmouseup="move(userShip,'end')" onmouseout="move(userShip,'end')" ontouchstart="move(userShip,'down')" ontouchend="move(userShip,'end')">
+    
+        <input type="range" class="power-slider" id="engine-power" value="0" min="0" max="100" oninput="energyChange('engine')">
+        <input type="range" class="power-slider" id="weapon-power" value="0" min="0" max="100" oninput="energyChange('weapon')">
+        <input type="button" id="weapon-fire" value="FIRE">
+        <input type="range" class="power-slider" id="shield-power" value="0" min="0" max="100" oninput="energyChange('shield')">
     </div>
 
     <script>

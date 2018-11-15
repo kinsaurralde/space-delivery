@@ -1,7 +1,11 @@
 var windowScale, currentX, currentY, maxX, maxY, newX, newY, fireAngle;
 var speed = 80;
 var userShip, enemyShip;
+var smallShip;
 var backgroundStars;
+var engineSlider;
+var weaponSlider;
+var shieldSlider;
 var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
 
 var hitBoxes = false;
@@ -21,8 +25,10 @@ function setup() {
 }
 
 function reset() {
-  userShip = new Ship("user", -600, 0);
-  enemyShip = new Ship("enemy", 600, 0);
+  // name, x, y, w, h, health, shield, damage, energy, engine, enginePower, weaponPower, shieldPower, xVel, xVelMax, yVel, yVelMax
+  smallShip = new Specs("Ship-Small", -600, 0, 200, 100, 200, 170, 200, 200, 200, 50, 50, 100, 0, 5, 0, 5);
+  userShip = new Ship("User",smallShip, -600, 0);
+  enemyShip = new Ship("enemy", smallShip, 600,0);
 }
 
 /****************************** Create *******************************/
@@ -49,7 +55,7 @@ function createBackground(stars) {
 /****************************** Main *******************************/
 
 function draw() {
-  frameRate(60);
+  frameRate(30);
   background(200, 200, 200);
   translate(width / 2, height / 2);
 
@@ -83,38 +89,55 @@ function drawHealth() {
   noStroke();
   fill(0);
   scaleTextSize(40);
-  //scaleText("Engine", -600, -500);
-  //scaleText(userShip.engineHealth + "%", -600, -400);
+  scaleText("Engine", -600, -500);
+  scaleText(userShip.engineHealth + "%", -600, -400);
   scaleText("Shield", -300, -500);
-  scaleText(userShip.shieldHealth + "%", -300, -400);
+  scaleText(userShip.shieldHealth, -300, -400);
   scaleText("Ship Health", 0, -500);
-  scaleText(userShip.health + "%", -0, -400);
+  scaleText(userShip.health, -0, -400);
   scaleText("Generator", 300, -500);
-  scaleText(userShip.energyHealth + "%", 300, -400);
-  //scaleText("Weapons", 600, -500);
-  //scaleText(userShip.weaponHealth + "%", 600, -400);
+  scaleText(userShip.energyHealth, 300, -400);
+  scaleText("Weapons", 600, -500);
+  scaleText(userShip.weaponHealth + "%", 600, -400);
+
+  scaleText("Engine Power", -575, 400);
+  scaleText("Weapon Power", -110, 400);
+  scaleText("Missile", 210, 400);
+  scaleText("Shield Power", 575, 400);
+
+  scaleText(userShip.enginePower,-625,450);
+  scaleText(userShip.enginePowerAttempt,-540,450);
+  scaleText(userShip.weaponPower,-160,450);
+  scaleText(userShip.weaponPowerAttempt,-75,450);
+  scaleText(userShip.shieldPower,525,450);
+  scaleText(userShip.shieldPowerAttempt,610,450);
+
+  scaleTextSize(25);
+  scaleText("Actual            /             Attempt",-575, 450);
+  scaleText("Actual            /             Attempt",-110, 450);
+  scaleText("Actual            /             Attempt",575, 450);
 
   rectMode(CORNER);
   fill(255, 25, 255);
-  //scaleRect(-725, -462.5, 2.5 * userShip.engineHealth, 25, 20);
+  scaleRect(-725, -462.5, 2.5 * (userShip.engineHealth / userShip.maxHealth) * 100, 25, 20);
   fill(0, 100, 255);
-  scaleRect(-425, -462.5, 2.5 * userShip.shieldHealth, 25, 20);
+  scaleRect(-425, -462.5, 2.5 * (userShip.shieldHealth / userShip.maxHealth) * 100, 25, 20);
   fill(255, 0, 0);
-  scaleRect(-125, -462.5, 2.5 * userShip.health, 25, 20);
+  scaleRect(-125, -462.5, 2.5 * (userShip.health / userShip.maxHealth) * 100, 25, 20);
   fill(255, 255, 25);
-  scaleRect(175, -462.5, 2.5 * userShip.energyHealth, 25, 20);
+  scaleRect(175, -462.5, 2.5 * (userShip.energyHealth / userShip.maxHealth) * 100, 25, 20);
   fill(255, 125, 25);
-  //scaleRect(475, -462.5, 2.5 * userShip.weaponHealth, 25, 20);
+  scaleRect(475, -462.5, 2.5 * (userShip.weaponHealth / userShip.maxHealth) * 100, 25, 20);
   rectMode(CENTER);
 
   noFill();
   stroke(0);
   scaleStrokeWeight(5);
-  //scaleRect(-600, -450, 250, 25, 20); // Engine
+  scaleRect(-600, -450, 250, 25, 20); // Engine
   scaleRect(-300, -450, 250, 25, 20); // Shield
   scaleRect(0, -450, 250, 25, 20); // Main
   scaleRect(300, -450, 250, 25, 20); // Energy
-  //scaleRect(600, -450, 250, 25, 20); // Weapons
+  scaleRect(600, -450, 250, 25, 20); // Weapons
 }
 
 function drawExplode(x, y) {
@@ -163,9 +186,9 @@ function drawHitBoxes() {
 /****************************** Inputs *******************************/
 
 function clicked() {
- currentX = constrain(round(mouseX * 1 / windowScale - 960), -800, 800);
- currentY = constrain(round(mouseY * 1 / windowScale - 540), -360, 360);
- fire(userShip, currentX, currentY);
+  currentX = constrain(round(mouseX * 1 / windowScale - 960), -800, 800);
+  currentY = constrain(round(mouseY * 1 / windowScale - 540), -360, 360);
+  fire(userShip, currentX, currentY);
 }
 
 function keyPressed() {
@@ -182,22 +205,64 @@ function keyReleased() {
   }
 }
 
+function energyChange(type) {
+  var tmp;
+  var engineSlider = document.getElementById("engine-power");
+  var weaponSlider = document.getElementById("weapon-power");
+  var shieldSlider = document.getElementById("shield-power");
+  userShip.enginePowerAttempt = engineSlider.value;
+  userShip.weaponPowerAttempt = weaponSlider.value;
+  userShip.shieldPowerAttempt = shieldSlider.value;
+  if (type == "engine") {
+    tmp = userShip.enginePower;
+    userShip.enginePower = int(engineSlider.value);
+    engineSlider.value = userShip.enginePowerAttempt;
+  } else if (type == "weapon") {
+    tmp = userShip.weaponPower;
+    userShip.weaponPower = int(weaponSlider.value);
+    weaponSlider.value = userShip.weaponPowerAttempt;
+  } else if (type == "shield") {
+    tmp = userShip.shieldPower;
+    userShip.shieldPower = int(shieldSlider.value);
+    shieldSlider.value = userShip.shieldPowerAttempt;
+  }
+  if (checkEnergyOver()) {
+    if (type == "engine") {
+      userShip.enginePower = tmp;
+      engineSlider.value = tmp;
+    } else if (type == "weapon") {
+      userShip.weaponPower = tmp;
+      weaponSlider.value = tmp;
+    } else if (type == "shield") {
+      userShip.shieldPower = tmp;
+      shieldSlider.value = tmp;
+    }
+  }
+
+}
+
+function checkEnergyOver() {
+  console.log("Engine:",userShip.enginePower,"Weapon:",userShip.weaponPower,"Shield:",userShip.shieldPower,"Max:",userShip.energyHealth);
+  if (userShip.enginePower + userShip.weaponPower + userShip.shieldPower > userShip.energyHealth) {
+    console.log("OVER");
+    return true;
+  }
+  return false;
+}
 
 
 /****************************** Collisions *******************************/
 
 function checkEnemyHit(x, y, senderShip) {
- // console.log("From:",senderShip);
   if (senderShip != "enemy") {
-    //console.log(senderShip);
     if (enemyShip.checkHit(x, y)) {
-      enemyShip.damage(userShip.weapon, userShip.fireTime);
+      enemyShip.damage(userShip.weapon);
       return true
     }
   }
-  if (senderShip != "user") {
-    if (userShip.checkHit(x,y)) {
-      userShip.damage(enemyShip.weapon,enemyShip.fireTime);
+  if (senderShip != "User") {
+    if (userShip.checkHit(x, y)) {
+      userShip.damage(enemyShip.weapon);
       return true
     }
   }
@@ -208,7 +273,6 @@ function checkEnemyHit(x, y, senderShip) {
 /****************************** Other *******************************/
 
 function killShip(ship) {
-  console.log("oighs", ship, 896);
   if (ship == "enemy") {
     setTimeout(function () {
       enemyShip = new Ship("enemy", 1500, 0);
@@ -233,7 +297,7 @@ function fire(ship, x, y) {
   if (ship.firing) {
     return
   }
-  ship.targetCoords(x,y);
+  ship.targetCoords(x, y);
   ship.firing = true;
   setTimeout(function () {
     ship.firing = false;
@@ -323,28 +387,49 @@ function fullScreen() {
 /****************************** Classes *******************************/
 
 class Ship {
-  constructor(name, x, y, weaponColor) {
-    this.name = name;
-    this.alive = true;
-    this.x = x;
-    this.y = y;
-    this.w = 200;
-    this.h = 100;
-    this.weaponColor = weaponColor;
-    this.fireX = this.x + this.w / 2;
-    this.fireY = this.y;
-    this.sW = this.w * 1.5;
-    this.sH = this.h * 1.5;
-    this.yVel = random(-100 ,100) / 100;
-    this.yAccel = 0;
-    this.health = 100;
-    this.shieldHealth = 100;
-    this.weaponHealth = 100;
-    this.energyHealth = 100;
-    this.engineHealth = 100;
-    this.weapon = 40;
-    this.shieldDamage = 0;
-    this.healthDamage = 0;
+  constructor(name, specs, x, y) {
+    this.name = name; // name of ship
+    this.type = specs.name; // type of ship
+
+    this.specs = specs;
+
+    this.x = x; // initial x pos
+    this.y = y; // initial y pos
+    this.w = specs.w; // width
+    this.h = specs.h; // height
+
+    this.health = specs.health; // health
+    this.maxHealth = specs.health;
+    this.shieldHealth = specs.shield;
+    this.weaponHealth = specs.damage;
+    this.energyHealth = specs.energy;
+    this.engineHealth = specs.engine;
+
+    this.shield = specs.shield; // shield
+    this.weapon = specs.damage; // damage
+    this.energy = specs.energy; // energy
+    this.engine = specs.engine; // engine
+
+    this.enginePower = specs.enginePower; // initial enigne power
+    this.weaponPower = specs.weaponPower; // inital weapon power
+    this.shieldPower = specs.shieldPower; // initial shield power
+
+    this.enginePowerAttempt = specs.enginePower;
+    this.weaponPowerAttempt = specs.weaponPower;
+    this.shieldPowerAttempt = specs.shieldPower;
+
+    this.xVel = specs.xVel;
+    this.xVelMax = specs.xVelMax;
+    this.xAccel = 0;
+    this.yVel = specs.yVel;
+    this.yVelMax = specs.yVelMax;
+    this.yAccel = 0
+
+    this.fireX = specs.fireX;
+    this.fireY = specs.fireY;
+    this.shieldW = specs.shieldW;
+    this.shieldH = specs.shieldH;
+
     this.damagePF = 0;
     this.fireTime = 400;
     this.firing = false;
@@ -353,16 +438,14 @@ class Ship {
     this.exploding = false;
     this.maxX = 0;
     this.maxY = 0;
-    console.log("New Ship:", this.name, this);
-    this.setup();
-  }
+    
+   this.alive = true;
 
-  setup() {
-    if (this.name == "user") {
-      this.weaponColor = color(255, 125, 25);
-    } else if (this.name == "enemy") {
-      this.weaponColor = color(255, 25, 25);
-    }
+   document.getElementById("engine-power").value = this.enginePowerAttempt;
+   document.getElementById("weapon-power").value = this.weaponPowerAttempt;
+   document.getElementById("shield-power").value = this.shieldPowerAttempt;
+
+    console.log("New Ship:", this.name,"Type",this.type, this);
   }
 
   draw() {
@@ -370,7 +453,7 @@ class Ship {
     noStroke()
 
     if (this.alive) {
-      fill(0, 100, 255); // rear engines
+      fill(0,100,255); // rear engines
       scaleRect(this.x - this.w / 2.05, this.y + this.h / 4, this.h / 4, this.h / 4, this.h / 10);
       scaleRect(this.x - this.w / 2.05, this.y - this.h / 4, this.h / 4, this.h / 4, this.h / 10);
 
@@ -382,14 +465,14 @@ class Ship {
         scaleRect(this.x + this.w / 4, this.y + this.h / 2.1, this.h / 4, this.h / 4, this.h / 10);
       }
 
-      fill(200, 200, 200); // main body
+      fill(200,200,200); // main body
       scaleRectCurve(this.x, this.y, this.w, this.h, this.h / 10, this.h / 2, this.h / 2, this.h / 10);
       scaleEllipse(this.x + this.w / 5, this.y, this.w, this.h);
 
       fill(0); // labels
       noStroke();
       scaleTextSize(20);
-      if (this.name != "user") {
+      if (this.type != "Ship-Small") {
         scaleText(this.name, this.x, this.y - this.h / 4);
       }
       scaleText(this.shieldHealth, this.x - this.w / 5, this.y + this.h / 4);
@@ -397,10 +480,10 @@ class Ship {
 
       rectMode(CORNER);
       noStroke();
-      fill(0, 100, 255);
-      scaleRect(this.x - this.w / 3, this.y - this.h / 20, this.w / 4 * this.shieldHealth / 100, this.h / 10, this.h / 4);
+      fill(0,100,255);
+      scaleRect(this.x - this.w / 3, this.y - this.h / 20, this.w / 4 * this.shieldHealth / this.maxHealth, this.h / 10, this.h / 4);
       fill(255, 0, 0);
-      scaleRect(this.x + this.w / 12, this.y-this.h/20, this.w / 4 * this.health / 100, this.h / 10, this.h / 4);
+      scaleRect(this.x + this.w / 12, this.y - this.h / 20, this.w / 4 * this.health / this.maxHealth, this.h / 10, this.h / 4);
       rectMode(CENTER);
 
       noFill();
@@ -412,19 +495,20 @@ class Ship {
       if (this.shieldHealth > 0) {
         noFill();
         scaleStrokeWeight(2);
-        stroke(0, 100, 255);
-        scaleEllipse(this.x, this.y, this.sW, this.sH);
+        stroke(0,100,255);
+        scaleEllipse(this.x, this.y, this.shieldW, this.shieldH);
       }
 
       if (this.firing) {
         this.targetMaxCoords();
-        stroke(this.weaponColor);
-        scaleLine(this.maxX,this.maxY, this.fireX, this.fireY);
+        stroke(255,100,25);
+        scaleLine(this.maxX, this.maxY, this.fireX, this.fireY);
       }
     }
   }
 
   update() {
+    this.updateEnergy();
     if (this.name == "enemy") {
       if (this.y > 200) {
         move(enemyShip, 'up');
@@ -433,14 +517,14 @@ class Ship {
       } else {
         move(enemyShip, 'end');
       }
-      if (frameCount % 120 == 100) {
-        fire(enemyShip, userShip.x, userShip.y);
+      if (frameCount % 240 == 100) {
+        //fire(enemyShip, userShip.x, userShip.y);
       }
     }
     this.fireX = this.x + this.w / 2;
     this.fireY = this.y;
     this.yVel += this.yAccel;
-    this.yVel = constrain(this.yVel, -5, 5);
+    this.yVel = constrain(this.yVel, -this.yVelMax, this.yVelMax);
     this.y += this.yVel;
     if (this.damageTicks > 0) {
       this.damageTicks -= 1;
@@ -449,11 +533,11 @@ class Ship {
       } else {
         this.health -= this.damagePF;
       }
-      this.energyHealth -= this.damagePF;
+      this.energyHealth -= round(this.damagePF * 10) / 10;
     }
     if (this.shieldHealth == 0) {
-      this.sW = this.w;
-      this.sH = this.h;
+      this.shieldW = this.w;
+      this.shieldH = this.h;
     }
     if (this.health <= 0) {
       if (!this.exploding) {
@@ -463,19 +547,37 @@ class Ship {
         this.kill();
       }
     }
-    if (this.checkCollision()) {
+    if (this.checkCollisionWall()) {
       move('end');
       this.yVel = -this.yVel;
     }
-    this.engineHealth = constrain(this.engineHealth, 0, 100);
-    this.shieldHealth = constrain(this.shieldHealth, 0, 100);
-    this.health = constrain(this.health, 0, 100);
-    this.energyHealth = constrain(this.energyHealth, 0, 100);
-    this.weaponHealth = constrain(this.weaponHealth, 0, 100);
+    this.engineHealth = constrain(this.engineHealth, 0, this.maxHealth);
+    this.shieldHealth = constrain(this.shieldHealth, 0, this.maxHealth);
+    this.health = constrain(this.health, 0, this.maxHealth);
+    this.energyHealth = constrain(this.energyHealth, 0, this.maxHealth);
+    this.weaponHealth = constrain(this.weaponHealth, 0, this.maxHealth);
   }
 
-  checkCollision() {
-    if (this.y + this.sH / 2 >= 360 || this.y - this.sH / 2 <= -360) {
+  updateEnergy() {
+
+    /*
+    try {
+    this.enginePowerAttempt = engineSlider.value;
+    this.weaponPowerAttempt = weaponSlider.value;
+    this.shieldPowerAttempt = shieldSlider.value;
+
+    this.enginePower = round(this.enginePowerAttempt / 2);
+    this.weaponPower = round(this.weaponPowerAttempt / 3);
+    this.shieldPower = round(this.shieldPowerAttempt / 4);
+    } catch(e) {
+      console.log(e);
+    }
+    */
+  // console.log(engineSlider);
+  }
+
+  checkCollisionWall() {
+    if (this.y + this.shieldH / 2 >= 360 || this.y - this.shieldH / 2 <= -360) {
       if (this.shieldHealth > 0) {
         this.shieldHealth -= 60;
       } else {
@@ -491,9 +593,9 @@ class Ship {
   checkHit(x, y) {
     let value;
     if (this.shieldHealth > 0) {
-      value = (pow(x - this.x, 2) / pow(this.sW / 2, 2)) + (pow(y - this.y, 2) / pow(this.sH / 2, 2));
+      value = (pow(x - this.x, 2) / pow(this.shieldW / 2, 2)) + (pow(y - this.y, 2) / pow(this.shieldH / 2, 2));
     } else {
-      value = (pow(x - this.x - this.w / 4, 2) / pow(this.sW / 2, 2)) + (pow(y - this.y, 2) / pow(this.sH / 2, 2));
+      value = (pow(x - this.x - this.w / 4, 2) / pow(this.shieldW / 2, 2)) + (pow(y - this.y, 2) / pow(this.shieldH / 2, 2));
       if (x > this.x - this.w / 2 && x < this.x + this.w / 2 && y > this.y - this.h / 2 && y < this.y + this.h / 2) {
         return true;
       }
@@ -508,14 +610,14 @@ class Ship {
     stroke(0, 255, 0);
     scaleStrokeWeight(5);
     if (this.shieldHealth > 0) {
-      scaleEllipse(this.x, this.y, this.sW, this.sH);
+      scaleEllipse(this.x, this.y, this.shieldW, this.shieldH);
     } else {
-      scaleEllipse(this.x + this.w / 4, this.y, this.sW, this.sH);
+      scaleEllipse(this.x + this.w / 4, this.y, this.shieldW, this.shieldH);
       scaleRect(this.x, this.y, this.w, this.h, 0);
     }
   }
 
-  targetCoords(x,y) {
+  targetCoords(x, y) {
     this.newX = x - this.fireX;
     this.newY = y - this.fireY;
     this.fireAngle = atan(this.newY / this.newX);
@@ -525,12 +627,11 @@ class Ship {
     this.targetMaxCoords();
     //checkEnemyHit();
   }
-  
+
   targetMaxCoords() {
     var tX = this.fireX;
     var tY = this.fireY;
     var tR = 0;
-    //console.log("Sender:",this.name);
     while (tX >= -800 && tX <= 800 && tY >= -360 && tY <= 360 && !checkEnemyHit(tX, tY, this.name)) {
       tX = tR * cos(this.fireAngle) + this.fireX;
       tY = tR * sin(this.fireAngle) + this.fireY;
@@ -540,12 +641,52 @@ class Ship {
     this.maxY = tY;
   }
 
-  damage(num, time) {
+  damage(num) {
     this.damagePF = round((num / (.4 * frameRate())) / 2);
     this.damageTicks = round(frameRate() * .4) / 2;
   }
 
   kill() {
     killShip(this.name);
+  }
+}
+
+class Specs {
+  constructor(name, x, y, w, h, health, shield, damage, energy, engine, enginePower, weaponPower, shieldPower, xVel, xVelMax, yVel, yVelMax) {
+    this.name = name; // name of ship type
+
+    this.x = x; // initial x pos
+    this.y = y; // initial y pos
+    this.w = w; // width
+    this.h = h; // height
+
+    this.health = health; // max health
+
+    this.shield = shield; // max shield
+    this.damage = damage; // max damage
+    this.energy = energy; // max energy
+    this.engine = engine; // max engine
+
+    this.enginePower = enginePower; // initial enigne power
+    this.weaponPower = weaponPower; // inital weapon power
+    this.shieldPower = shieldPower; // initial shield power
+
+    this.xVel = xVel; // initial x velocity
+    this.xVelMax = xVelMax; // max x velocity
+    this.yVel = yVel; // initial y velocity
+    this.yVelMax = yVelMax; // max y velocity
+
+    if (name == "Ship-Small") {
+      this.fireX = this.x + this.w / 2;
+      this.fireY = this.y;
+      this.shieldW = this.w * 1.5;
+      this.shieldH = this.h * 1.5;
+      this.hullColor = color(200,200,200);
+      this.weaponColor = color(255,100,25);
+      this.shieldColor = color(0,100,255);
+      this.engineColor = color(0,100,255);
+    }
+
+    console.log("New Ship Specs:", name, this);
   }
 }
