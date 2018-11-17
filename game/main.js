@@ -7,7 +7,7 @@ var engineSlider;
 var weaponSlider;
 var shieldSlider;
 var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
-
+var asteriods = new Array(10);
 var hitBoxes = false;
 /****************************** Setups *******************************/
 
@@ -29,6 +29,7 @@ function reset() {
   smallShip = new Specs("Ship-Small", -600, 0, 200, 100, 200, 200, 200, 200, 200, 50, 50, 100, 0, 5, 0, 5);
   userShip = new Ship("User", smallShip, -600, 0);
   enemyShip = new Ship("enemy", smallShip, 600, 0);
+  asteriods[0] = new Asteroid(12, 70);
 }
 
 /****************************** Create *******************************/
@@ -109,8 +110,8 @@ function drawHealth() {
   scaleText(userShip.enginePowerAttempt, -540, 450);
   scaleText(userShip.weaponPower, -160, 450);
   scaleText(userShip.weaponPowerAttempt, -75, 450);
-  scaleText(userShip.maxMissle-userShip.currentMissle, 155, 450);
-  scaleText("/",205,450);
+  scaleText(userShip.maxMissle - userShip.currentMissle, 155, 450);
+  scaleText("/", 205, 450);
   scaleText(userShip.maxMissle, 255, 450);
   scaleText(userShip.shieldPower, 525, 450);
   scaleText(userShip.shieldPowerAttempt, 610, 450);
@@ -175,6 +176,7 @@ function drawControls() {
 function drawShip() {
   userShip.draw();
   enemyShip.draw();
+  asteriods[0].draw();
 }
 
 function drawHitBoxes() {
@@ -297,14 +299,18 @@ function whoExplode() {
 }
 
 function fire(ship, x, y) {
-  if (ship.firing) {
+  if (ship.firing || ship.reload) {
     return
   }
   ship.targetCoords(x, y);
   ship.firing = true;
+  ship.reload = true;
   setTimeout(function () {
     ship.firing = false;
   }, ship.fireTime)
+  setTimeout(function () {
+    ship.reload = false;
+  }, ship.fireTime * 10)
 }
 
 
@@ -425,6 +431,7 @@ class Ship {
     this.xVelMax = specs.xVelMax;
     this.xAccel = 0;
     this.yVel = specs.yVel + random(-50,50) / 50;
+    //this.yVel = specs.yVel;
     this.yVelMax = specs.yVelMax;
     this.yAccel = 0
 
@@ -435,6 +442,8 @@ class Ship {
 
     this.maxMissle = 10;
     this.currentMissle = 0;
+
+    this.reload = false;
 
     this.damagePF = 0;
     this.fireTime = 400;
@@ -526,7 +535,7 @@ class Ship {
         move(enemyShip, 'end');
       }
       if (frameCount % 120 == 100) {
-        fire(enemyShip, userShip.x, userShip.y+random(-120,120));
+        // fire(enemyShip, userShip.x, userShip.y+random(-120,120));
       }
     }
     this.fireX = this.x + this.w / 2;
@@ -535,7 +544,7 @@ class Ship {
     this.yVel = constrain(this.yVel, -this.yVelMax, this.yVelMax);
     this.y += this.yVel;
     if (this.damageTicks > 0) {
-      console.log(this.damageTicks,this.damagePF);
+      console.log(this.damageTicks, this.damagePF);
       this.damageTicks -= 1;
       if (this.shieldHealth > 0) {
         this.shieldHealth -= round(this.damagePF * this.shieldPower / 100);
@@ -646,7 +655,7 @@ class Ship {
   }
 
   damage(num) {
-    console.log("Apply",num,"damage");
+    console.log("Apply", num, "damage");
     this.damagePF = round((num / (.4 * frameRate())) / 2);
     this.damageTicks = round(frameRate() * .4) / 2;
   }
@@ -721,5 +730,50 @@ class Missle {
       this.x = 0;
       this.y = 600;
     }
+  }
+}
+
+class Asteroid {
+  constructor(speed, size) {
+    this.x = 1000
+    this.y = random(-320, 320);
+    this.size = size;
+    this.speed = speed
+    this.rotate1 = random(0, 180);
+    this.rotate2 = this.rotate1 + random(40, 140);
+    this.rotate3 = this.rotate2 + random(40, 140);
+    this.rotate4 = this.rotate3 + random(40, 140);
+    //console.log(this.y, enemyShip.y + enemyShip.h)
+    while (this.y < enemyShip.y + enemyShip.h * 2.5 && this.y > enemyShip.y - enemyShip.h * 2.5) {
+      //console.log("redo");
+      this.y = random(-320, 320);
+    }
+  }
+
+  draw() {
+    noStroke();
+    fill(138, 64, 0);
+    push();
+    translate(this.x / 2, this.y / 2);
+    rotate(frameCount % 360);
+    push();
+    rotate(this.rotate1);
+    scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+    push();
+    rotate(this.rotate2);
+    scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+    push();
+    rotate(this.rotate3);
+    scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+    pop();
+    push();
+    rotate(this.rotate4);
+    scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+    pop();
+    pop();
+    pop();
+    scaleEllipse(0, 0, this.size, this.size);
+    pop();
+    this.x -= this.speed;
   }
 }
