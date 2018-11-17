@@ -245,7 +245,7 @@ function energyChange(type) {
 }
 
 function checkEnergyOver() {
-  console.log("Engine:", userShip.enginePower, "Weapon:", userShip.weaponPower, "Shield:", userShip.shieldPower, "Max:", userShip.energyHealth);
+  //console.log("Engine:", userShip.enginePower, "Weapon:", userShip.weaponPower, "Shield:", userShip.shieldPower, "Max:", userShip.energyHealth);
   if (userShip.enginePower + userShip.weaponPower + userShip.shieldPower > userShip.energyHealth) {
     console.log("OVER");
     return true;
@@ -312,9 +312,9 @@ function fire(ship, x, y) {
 
 function move(ship, dir) {
   if (dir == 'up') {
-    ship.yAccel = -speed / 4000;
+    ship.yAccel = -ship.yVelMax / 250 * ship.enginePower / 100;
   } else if (dir == 'down') {
-    ship.yAccel = speed / 4000;
+    ship.yAccel = ship.yVelMax / 250 * ship.enginePower / 100;
   } else if (dir == 'end') {
     ship.yAccel = 0;
   }
@@ -424,7 +424,7 @@ class Ship {
     this.xVel = specs.xVel;
     this.xVelMax = specs.xVelMax;
     this.xAccel = 0;
-    this.yVel = specs.yVel;
+    this.yVel = specs.yVel + random(-50,50) / 50;
     this.yVelMax = specs.yVelMax;
     this.yAccel = 0
 
@@ -500,7 +500,7 @@ class Ship {
       scaleRect(this.x - this.w / 5, this.y, this.w / 4, this.h / 10, this.h / 4); // shield health bar
       scaleRect(this.x + this.w / 5, this.y, this.w / 4, this.h / 10, this.h / 4); // ship health bar
 
-      if (this.shieldHealth > 0) {
+      if (this.shieldHealth > 0 && this.shieldPower > 0) {
         noFill();
         scaleStrokeWeight(2);
         stroke(0, 100, 255);
@@ -525,8 +525,8 @@ class Ship {
       } else {
         move(enemyShip, 'end');
       }
-      if (frameCount % 240 == 100) {
-        //fire(enemyShip, userShip.x, userShip.y);
+      if (frameCount % 120 == 100) {
+        fire(enemyShip, userShip.x, userShip.y+random(-120,120));
       }
     }
     this.fireX = this.x + this.w / 2;
@@ -538,11 +538,11 @@ class Ship {
       console.log(this.damageTicks,this.damagePF);
       this.damageTicks -= 1;
       if (this.shieldHealth > 0) {
-        this.shieldHealth -= this.damagePF;
+        this.shieldHealth -= round(this.damagePF * this.shieldPower / 100);
+        this.health -= round(this.damagePF * (100 - this.shieldPower) / 100);
       } else {
         this.health -= this.damagePF;
       }
-      this.energyHealth -= round(this.damagePF * 10) / 10;
     }
     if (this.shieldHealth == 0) {
       this.shieldW = this.w;
@@ -583,12 +583,11 @@ class Ship {
 
   checkCollisionWall() {
     if (this.y + this.shieldH / 2 >= 360 || this.y - this.shieldH / 2 <= -360) {
-      if (this.shieldHealth > 0) {
+      if (this.shieldHealth > 0 && this.shieldPower > 0) {
         this.shieldHealth -= 60;
       } else {
         this.health -= 40;
       }
-      this.energyHealth -= 10;
       return true
     } else {
       return false
