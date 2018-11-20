@@ -9,6 +9,8 @@ var shieldSlider;
 var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
 var asteriods = new Array(10);
 var hitBoxes = false;
+var mainTimer;
+var score = 0;
 /****************************** Setups *******************************/
 
 function setup() {
@@ -30,6 +32,7 @@ function reset() {
   userShip = new Ship("User", smallShip, -600, 0);
   enemyShip = new Ship("enemy", smallShip, 600, 0);
   asteriods[0] = new Asteroid(12, 70);
+  mainTimer = new Timer(3000, test);
 }
 
 /****************************** Create *******************************/
@@ -90,16 +93,16 @@ function drawHealth() {
   noStroke();
   fill(0);
   scaleTextSize(40);
-  scaleText("Engine", -600, -500);
-  scaleText(userShip.engineHealth + "%", -600, -400);
-  scaleText("Shield", -300, -500);
+  //scaleText("Timer", -600, -500);
+  //scaleText(  mainTimer.getTime(), -600, -400);
+  scaleText("Shield Health", -300, -500);
   scaleText(userShip.shieldHealth, -300, -400);
   scaleText("Ship Health", 0, -500);
   scaleText(userShip.health, -0, -400);
-  scaleText("Generator", 300, -500);
-  scaleText(userShip.energyHealth, 300, -400);
-  scaleText("Weapons", 600, -500);
-  scaleText(userShip.weaponHealth + "%", 600, -400);
+  scaleText("Energy Usage", 300, -500);
+  scaleText(int(userShip.enginePower) + int(userShip.shieldPower) + int(userShip.weaponPower), 300, -400);
+  //scaleText("Weapons", 600, -500);
+  //scaleText(userShip.weaponHealth + "%", 600, -400);
 
   scaleText("Engine Power", -575, 400);
   scaleText("Weapon Power", -110, 400);
@@ -122,26 +125,26 @@ function drawHealth() {
   scaleText("Actual            /             Attempt", 575, 450);
 
   rectMode(CORNER);
-  fill(255, 25, 255);
-  scaleRect(-725, -462.5, 2.5 * (userShip.engineHealth / userShip.maxHealth) * 100, 25, 20);
+  //fill(255, 25, 255);
+  //scaleRect(-725, -462.5, 2.5 * (userShip.engineHealth / userShip.maxHealth) * 100, 25, 20);
   fill(0, 100, 255);
   scaleRect(-425, -462.5, 2.5 * (userShip.shieldHealth / userShip.maxHealth) * 100, 25, 20);
   fill(255, 0, 0);
   scaleRect(-125, -462.5, 2.5 * (userShip.health / userShip.maxHealth) * 100, 25, 20);
   fill(255, 255, 25);
-  scaleRect(175, -462.5, 2.5 * (userShip.energyHealth / userShip.maxHealth) * 100, 25, 20);
-  fill(255, 125, 25);
-  scaleRect(475, -462.5, 2.5 * (userShip.weaponHealth / userShip.maxHealth) * 100, 25, 20);
+  scaleRect(175, -462.5, 2.5 * (int(userShip.enginePower) + int(userShip.shieldPower) + int(userShip.weaponPower)) / 200 * 100, 25, 20);
+  //fill(255, 125, 25);
+  //scaleRect(475, -462.5, 2.5 * (userShip.weaponHealth / userShip.maxHealth) * 100, 25, 20);
   rectMode(CENTER);
 
   noFill();
   stroke(0);
   scaleStrokeWeight(5);
-  scaleRect(-600, -450, 250, 25, 20); // Engine
+  //scaleRect(-600, -450, 250, 25, 20); // Engine
   scaleRect(-300, -450, 250, 25, 20); // Shield
   scaleRect(0, -450, 250, 25, 20); // Main
   scaleRect(300, -450, 250, 25, 20); // Energy
-  scaleRect(600, -450, 250, 25, 20); // Weapons
+  //scaleRect(600, -450, 250, 25, 20); // Weapons
 }
 
 function drawExplode(x, y) {
@@ -170,7 +173,12 @@ function drawControls() {
   noStroke();
   scaleTextSize(20);
   scaleText("FPS: " + round(frameRate()) + "     AVR FPS: " + round(frameCount / (millis() / 1000)) + "     Y Accel: " + userShip.yAccel + "     Y Vel: " + round(userShip.yVel * 1000) / 1000, 0, -350);
-
+  scaleTextSize(40);
+  fill(0);
+  scaleText("Timer", -600, -500);
+  scaleText(msToTime(mainTimer.getTime()), -600, -425);
+  scaleText("Score", 600, -500);
+  scaleText(score, 600, -425);
 }
 
 function drawShip() {
@@ -184,6 +192,20 @@ function drawHitBoxes() {
     userShip.drawHitBox();
     enemyShip.drawHitBox();
   }
+}
+
+function msToTime(duration) {
+  var milliseconds = parseInt((duration % 1000) / 100),
+    seconds = parseInt((duration / 1000) % 60),
+    minutes = parseInt((duration / (1000 * 60)) % 60),
+    hours = parseInt((duration / (1000 * 60 * 60)) % 24);
+
+  //hours = (hours < 10) ? "0" + hours : hours;
+  minutes = (minutes < 10) ? "0" + minutes : minutes;
+  seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+  //return hours + ":" + minutes + ":" + seconds + "." + milliseconds; // includes hours
+  return minutes + ":" + seconds + "." + milliseconds;
 }
 
 
@@ -279,6 +301,7 @@ function checkEnemyHit(x, y, senderShip, amount) {
 
 function killShip(ship) {
   if (ship == "enemy") {
+    score += 500;
     setTimeout(function () {
       enemyShip = new Ship("enemy", 1500, 0);
     }, 600)
@@ -430,7 +453,7 @@ class Ship {
     this.xVel = specs.xVel;
     this.xVelMax = specs.xVelMax;
     this.xAccel = 0;
-    this.yVel = specs.yVel + random(-50,50) / 50;
+    this.yVel = specs.yVel + random(-50, 50) / 50;
     //this.yVel = specs.yVel;
     this.yVelMax = specs.yVelMax;
     this.yAccel = 0
@@ -776,4 +799,25 @@ class Asteroid {
     pop();
     this.x -= this.speed;
   }
+}
+
+class Timer {
+  constructor(duration, call) {
+    this.start = Date.now();
+    this.duration = duration;
+    this.call = call;
+
+    setTimeout(function () {
+      test();
+    }, this.duration);
+  }
+
+  getTime() {
+    this.time = Date.now() - this.start;
+    return this.time;
+  }
+}
+
+function test() {
+  console.log("testgnezgy");
 }
