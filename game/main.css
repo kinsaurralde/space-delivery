@@ -112,3 +112,9 @@ textarea, select, input, button {
     left: 56vw;
     border: .25vw solid rgb(155,155,155);
 }
+
+.full-screen {
+    width: 100vw;
+    height: 100vw;
+    opacity: .2;
+}

@@ -396,7 +396,7 @@ class Timer {
         this.call = call;
 
         setTimeout(function () {
-            test();
+            mainTimer.call();
         }, this.duration);
     }
 

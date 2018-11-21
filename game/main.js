@@ -11,6 +11,7 @@ var asteriods = new Array(10);
 var hitBoxes = false;
 var mainTimer;
 var score = 0;
+var gameStatus = "menu"
 
 
 
@@ -25,6 +26,7 @@ function setup() {
   angleMode(DEGREES);
   mainCanvas.parent('sketch-holder');
   createBackground(20);
+  gameMenu();
   reset();
   setWindowSize();
 }
@@ -35,7 +37,6 @@ function reset() {
   userShip = new Ship("User", smallShip, -600, 0);
   enemyShip = new Ship("enemy", smallShip, 600, 0);
   asteriods[0] = new Asteroid(12, 70);
-  mainTimer = new Timer(3000, test);
 }
 
 
@@ -63,20 +64,41 @@ function createBackground(stars) {
 
 
 
-/****************************** Main *******************************/
+/****************************** Main / Control *******************************/
 
 function draw() {
   frameRate(30);
   background(200, 200, 200);
   translate(width / 2, height / 2);
 
-  drawBackground();
-  drawHealth();
-  drawControls();
-  drawShip();
-  drawHitBoxes();
+  if (gameStatus == "menu") {
+    drawMenu();
+  } else if (gameStatus == "playing") {
+    drawBackground();
+    drawHealth();
+    drawControls();
+    drawShip();
+    drawHitBoxes();
 
-  whoExplode();
+    whoExplode();
+  }
+}
+
+function gameOver() {
+  gameStatus = "post";
+}
+
+function gameStart() {
+  mainTimer = new Timer(120000,gameOver);
+  gameStatus = "playing";
+  menuSwitch("block");
+  document.getElementById("start").style.display = "none";
+}
+
+function gameMenu() {
+  gameStatus = "menu";
+  menuSwitch("none");
+  document.getElementById("start").style.display = "block";
 }
 
 
@@ -181,6 +203,7 @@ function killShip(ship) {
     setTimeout(function () {
       userShip = new Ship("user", -1500, 0);
     }, 600)
+    gameOver();
   }
 }
 
@@ -220,6 +243,15 @@ function msToTime(duration) {
 
   //return hours + ":" + minutes + ":" + seconds + "." + milliseconds; // includes hours
   return minutes + ":" + seconds + "." + milliseconds;
+}
+
+function menuSwitch(value) {
+  document.getElementById("ship-up").style.display = value;
+  document.getElementById("ship-down").style.display = value;
+  document.getElementById("engine-power").style.display = value;
+  document.getElementById("shield-power").style.display = value;
+  document.getElementById("weapon-power").style.display = value;
+  document.getElementById("weapon-fire").style.display = value;
 }
 
 
@@ -304,4 +336,5 @@ function fullScreen() {
 /****************************** Other *******************************/
 
 function test() { // temporary
+  console.log("timeout");
 }

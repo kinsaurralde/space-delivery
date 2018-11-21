@@ -1,5 +1,22 @@
 /****************************** Draws *******************************/
 
+function drawMenu() {
+    noStroke();
+    fill(0);
+
+    scaleTextSize(150);
+    scaleText("Spaceship",0,-350);
+
+    scaleTextSize(75);
+    scaleText("Click to start",0,350);
+
+    scaleTextSize(40);
+    scaleText("- Survive for 2 minutes",0,-100);
+    scaleText("- Earn points by destroying stuff",0,-33);
+    scaleText("- Allocate power to engines, shields, and weapons",0,33);
+    scaleText("- Ship speed, shield, and weapon strength depend on power",0,100);
+}
+
 function drawBackground() {
     noStroke();
     fill(0);
