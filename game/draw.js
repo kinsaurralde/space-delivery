@@ -17,6 +17,25 @@ function drawMenu() {
     scaleText("- Ship speed, shield, and weapon strength depend on power",0,100);
 }
 
+function drawGameOver() {
+    noStroke()
+    fill(0);
+
+    scaleTextSize(150);
+    scaleText("Game Over",0,-350);
+
+    scaleTextSize(75);
+    if (endHealth > 0) {
+        scaleText("You Survived with "+endHealth+"% remaining",0,-150);
+    } else {
+        scaleText("You Survived for "+msToTime(mainTimer.getTime()),0,-150);
+    }
+
+    scaleText("Score: "+score,0,-50);
+
+    scaleText("Click to restart",0,50);
+}
+
 function drawBackground() {
     noStroke();
     fill(0);
@@ -127,6 +146,15 @@ function drawShip() {
     userShip.draw();
     enemyShip.draw();
     asteriods[0].draw();
+}
+
+function drawBorder() {
+    noStroke();
+    fill(200,200,200);
+    scaleRect(0,-450,1920,180,0);
+    scaleRect(0,450,1920,180,0);
+    scaleRect(1080,0,560,1080,0);
+    scaleRect(-1080,0,560,1080,0);
 }
 
 function drawHitBoxes() {

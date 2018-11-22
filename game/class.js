@@ -394,14 +394,23 @@ class Timer {
         this.start = Date.now();
         this.duration = duration;
         this.call = call;
+        this.endTime = 0;
 
-        setTimeout(function () {
+        this.endCall = setTimeout(function () {
             mainTimer.call();
         }, this.duration);
     }
 
+    stop() {
+        this.endTime = Date.now() - this.start;
+    }
+
     getTime() {
-        this.time = Date.now() - this.start;
+        if (this.endTime == 0) {
+            this.time = Date.now() - this.start;
+        } else {
+            this.time = this.endTime;
+        }
         return this.time;
     }
 }

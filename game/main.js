@@ -6,12 +6,13 @@ var backgroundStars;
 var engineSlider;
 var weaponSlider;
 var shieldSlider;
-var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
+//var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
 var asteriods = new Array(10);
 var hitBoxes = false;
 var mainTimer;
 var score = 0;
-var gameStatus = "menu"
+var gameStatus = "menu";
+var endHealth;
 
 
 
@@ -26,7 +27,7 @@ function setup() {
   angleMode(DEGREES);
   mainCanvas.parent('sketch-holder');
   createBackground(20);
-  gameMenu();
+  //gameMenu();
   reset();
   setWindowSize();
 }
@@ -37,6 +38,8 @@ function reset() {
   userShip = new Ship("User", smallShip, -600, 0);
   enemyShip = new Ship("enemy", smallShip, 600, 0);
   asteriods[0] = new Asteroid(12, 70);
+  score = 0
+  gameMenu();
 }
 
 
@@ -75,30 +78,43 @@ function draw() {
     drawMenu();
   } else if (gameStatus == "playing") {
     drawBackground();
-    drawHealth();
-    drawControls();
     drawShip();
     drawHitBoxes();
+    drawBorder();
+    drawHealth();
+    drawControls();
 
     whoExplode();
+  } else if (gameStatus == "end") {
+    drawGameOver();
   }
 }
 
 function gameOver() {
-  gameStatus = "post";
+  clearTimeout(mainTimer.endCall);
+  mainTimer.stop();
+  endHealth = round(userShip.health/userShip.maxHealth*100);
+  score += endHealth * 10;
+  console.log("Game Over",endHealth);
+  gameStatus = "end";
+  menuSwitch("none");
+  document.getElementById("start").style.display = "none";
+  document.getElementById("reset").style.display = "block";
 }
 
 function gameStart() {
-  mainTimer = new Timer(120000,gameOver);
+  mainTimer = new Timer(12000,gameOver);
   gameStatus = "playing";
   menuSwitch("block");
   document.getElementById("start").style.display = "none";
+  document.getElementById("reset").style.display = "none";
 }
 
 function gameMenu() {
   gameStatus = "menu";
   menuSwitch("none");
   document.getElementById("start").style.display = "block";
+  document.getElementById("reset").style.display = "none";
 }
 
 
@@ -201,9 +217,9 @@ function killShip(ship) {
     }, 600)
   } else if (ship == "user") {
     setTimeout(function () {
-      userShip = new Ship("user", -1500, 0);
+      //userShip = new Ship("user", -1500, 0);
+      gameOver(0);
     }, 600)
-    gameOver();
   }
 }
 
