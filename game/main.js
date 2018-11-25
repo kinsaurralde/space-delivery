@@ -6,7 +6,7 @@ var backgroundStars;
 var engineSlider;
 var weaponSlider;
 var shieldSlider;
-//var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
+var maxExplode = 100, explodeCount = 200, enemyExplode = false, userExplode = false;
 var asteriods = new Array(10);
 var hitBoxes = false;
 var mainTimer;
@@ -37,7 +37,8 @@ function reset() {
   smallShip = new Specs("Ship-Small", -600, 0, 200, 100, 200, 200, 200, 200, 200, 50, 50, 100, 0, 5, 0, 5);
   userShip = new Ship("User", smallShip, -600, 0);
   enemyShip = new Ship("enemy", smallShip, 600, 0);
-  asteriods[0] = new Asteroid(12, 70);
+  asteriods[0] = new Asteroid(8, 70);
+
   score = 0
   gameMenu();
 }
@@ -103,7 +104,7 @@ function gameOver() {
 }
 
 function gameStart() {
-  mainTimer = new Timer(12000,gameOver);
+  mainTimer = new Timer(120000,gameOver);
   gameStatus = "playing";
   menuSwitch("block");
   document.getElementById("start").style.display = "none";
@@ -195,6 +196,9 @@ function checkEnemyHit(x, y, senderShip, amount) {
     if (enemyShip.checkHit(x, y)) {
       enemyShip.damage(amount);
       return true
+    }
+    if (asteriods[0].checkHit(x,y)) {
+      asteriods[0].kill();
     }
   }
   if (senderShip != "User") {

@@ -45,7 +45,11 @@ class Ship {
         this.shieldW = specs.shieldW;
         this.shieldH = specs.shieldH;
 
-        this.maxMissle = 10;
+        if (this.name == "User") {
+            this.maxMissle = 5;
+        } else {
+            this.maxMissle = 10;
+        }
         this.currentMissle = 0;
 
         this.reload = false;
@@ -140,7 +144,9 @@ class Ship {
                 move(enemyShip, 'end');
             }
             if (frameCount % 120 == 100) {
-                // fire(enemyShip, userShip.x, userShip.y+random(-120,120));
+                fire(enemyShip, userShip.x, userShip.y+random(-80,80));
+            } else if (frameCount % 150 == 130) {
+                this.newMissle();
             }
         }
         this.fireX = this.x + this.w / 2;
@@ -189,8 +195,13 @@ class Ship {
     }
 
     newMissle() {
+        if (this.name == "enemy") {
+            this.direction = -1;
+        } else {
+            this.direction = 1;
+        }
         if (this.currentMissle < this.maxMissle && this.weaponPower > 10) {
-            this.missles[this.currentMissle] = new Missle(this.fireX, this.fireY, this.weaponPower / 6, this.yVel, this.name);
+            this.missles[this.currentMissle] = new Missle(this.fireX, this.fireY, this.weaponPower / 6 * this.direction, this.yVel, this.name);
             this.currentMissle++;
         }
     }
@@ -198,9 +209,10 @@ class Ship {
     checkCollisionWall() {
         if (this.y + this.shieldH / 2 >= 360 || this.y - this.shieldH / 2 <= -360) {
             if (this.shieldHealth > 0 && this.shieldPower > 0) {
-                this.shieldHealth -= 60;
+                this.shieldHealth -= 80;
+                this.health -= 20
             } else {
-                this.health -= 40;
+                this.health -= 80;
             }
             return true
         } else {
@@ -344,10 +356,12 @@ class Missle {
 
 class Asteroid {
     constructor(speed, size) {
+        this.alive = true;
         this.x = 1000
         this.y = random(-320, 320);
         this.size = size;
-        this.speed = speed
+        this.speed = speed;
+        this.yVel = random() / 3;
         this.rotate1 = random(0, 180);
         this.rotate2 = this.rotate1 + random(40, 140);
         this.rotate3 = this.rotate2 + random(40, 140);
@@ -360,30 +374,73 @@ class Asteroid {
     }
 
     draw() {
-        noStroke();
-        fill(138, 64, 0);
-        push();
-        translate(this.x / 2, this.y / 2);
-        rotate(frameCount % 360);
-        push();
-        rotate(this.rotate1);
-        scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
-        push();
-        rotate(this.rotate2);
-        scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
-        push();
-        rotate(this.rotate3);
-        scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
-        pop();
-        push();
-        rotate(this.rotate4);
-        scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
-        pop();
-        pop();
-        pop();
-        scaleEllipse(0, 0, this.size, this.size);
-        pop();
-        this.x -= this.speed;
+        if (this.alive) {
+            this.checkCollide();
+            if (this.x < -1000) {
+                this.kill();
+            }
+            noStroke();
+            fill(138, 64, 0);
+            push();
+            translate(this.x * windowScale, this.y * windowScale);
+            rotate(frameCount % 360);
+            push();
+            rotate(this.rotate1);
+            scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+            push();
+            rotate(this.rotate2);
+            scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+            push();
+            rotate(this.rotate3);
+            scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+            pop();
+            push();
+            rotate(this.rotate4);
+            scaleTriangle(0, 0 + this.size * 3 / 4, 0 - this.size / 2, 0, 0 + this.size / 3, 0);
+            pop();
+            pop();
+            pop();
+            scaleEllipse(0, 0, this.size, this.size);
+            pop();
+            this.x -= this.speed;
+            this.y += this.yVel;
+        }
+    }
+
+    checkCollide() {
+        for (i = 0; i < 9; i++) {
+            this.checkX = this.x+this.size/2*cos(i*40);
+            this.checkY = this.y+this.size/2*sin(i*40);
+            noStroke()
+            fill(0,255-i*22,0);
+            //scaleEllipse(this.checkX,this.checkY,20,20);
+            //scaleEllipse(this.x,this.y,30,30);
+            if (userShip.checkHit(this.checkX,this.checkY)) {
+                userShip.damage(350);
+                this.kill();
+                break
+            }
+        }
+    }
+
+    checkHit(x, y) {
+        let value = (pow(x - this.x, 2) / pow(this.size / 2, 2)) + (pow(y - this.y, 2) / pow(this.size / 2, 2));
+        if (value <= 1) {
+            return true
+        }
+        return false
+    }
+
+    kill() {
+        if (this.alive) {
+            this.alive = false;
+            score += 50;
+            setTimeout(function() {
+                if (gameStatus == "playing") {
+                    asteriods[0] = new Asteroid(random(6,12),random(50,100))
+                }
+            }, random(2000,5000));
+        }
     }
 }
 
