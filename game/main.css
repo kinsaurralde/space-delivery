@@ -15,13 +15,18 @@ textarea, select, input, button {
     -webkit-user-select: none;
 }
 
+.game-setting {
+    width: 15vw;
+    height: 10vw;
+}
+
 .sketch-holder-norm {
     overflow: hidden;
     position: relative;
     padding-bottom: 57%; /* 56.25% for 16:9 +.75 extra */
     height: 0;
-    border: 1px solid rgb(200,200,200);
-    border: 2px solid rgb(255,0,0);
+    border: 2px solid rgb(155,155,155);
+    top: 1vw;
 }
 
 .sketch-holder-norm iframe {
@@ -43,8 +48,8 @@ textarea, select, input, button {
 }
 
 #fullscreen {
-    left: 45vw;
-    top: 5vh;
+    left: 2vw;
+    top: 2vh;
 }
 
 .game-setting {
@@ -117,4 +122,9 @@ textarea, select, input, button {
     width: 100vw;
     height: 100vw;
     opacity: .2;
+}
+
+.content {
+    margin: 0 auto;
+    width: 80%
 }
