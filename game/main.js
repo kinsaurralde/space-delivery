@@ -131,6 +131,7 @@ function clicked() {
 function keyPressed() {
   if (keyCode == UP_ARROW) {
     move(userShip, 'up');
+    return false;
   } else if (keyCode == DOWN_ARROW) {
     move(userShip, 'down');
   }
