@@ -26,7 +26,6 @@ textarea, select, input, button {
     padding-bottom: 57%; /* 56.25% for 16:9 +.75 extra */
     height: 0;
     border: 2px solid rgb(155,155,155);
-    top: 1vw;
 }
 
 .sketch-holder-norm iframe {
@@ -126,5 +125,5 @@ textarea, select, input, button {
 
 .content {
     margin: 0 auto;
-    width: 80%
+    width: 100%
 }
