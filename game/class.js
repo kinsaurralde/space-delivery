@@ -143,10 +143,21 @@ class Ship {
             } else {
                 move(enemyShip, 'end');
             }
-            if (frameCount % 120 == 100) {
+            if (frameCount % 150 == 100) {
                 fire(enemyShip, userShip.x, userShip.y+random(-80,80));
-            } else if (frameCount % 150 == 130) {
+            } else if (frameCount % 200 == 100) {
                 this.newMissle();
+            }
+            if (this.x > 600) {
+                this.xVel = -constrain((this.x - 600)/20, 0, 30);
+            } else {
+                this.xVel = 0;
+            }
+        } else {
+            if (this.health > 0 && this.health < 200) {
+                if (frameCount % 15 == 0) {
+                    this.health++;
+                }
             }
         }
         this.fireX = this.x + this.w / 2;
@@ -154,6 +165,7 @@ class Ship {
         this.yVel += this.yAccel;
         this.yVel = constrain(this.yVel, -this.yVelMax, this.yVelMax);
         this.y += this.yVel;
+        this.x += this.xVel;
         if (this.damageTicks > 0) {
             console.log(this.damageTicks, this.damagePF);
             this.damageTicks -= 1;
@@ -343,7 +355,12 @@ class Missle {
     update() {
         this.x += this.xVel;
         this.y += this.yVel;
-        if (checkEnemyHit(this.x, this.y, this.name, 150 * ((.4 * frameRate()) / 2) * 4 / 6)) { // first number of last parameter is damage amount
+        if (this.name == "User") {
+            this.dmg = 600;
+        } else {
+            this.dmg = 300
+        }
+        if (checkEnemyHit(this.x, this.y, this.name, this.dmg)) { // first number of last parameter is damage amount
             this.xVel = 0;
             this.yVel = 0;
             this.x = 0;

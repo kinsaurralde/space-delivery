@@ -36,7 +36,7 @@ function reset() {
   // name, x, y, w, h, health, shield, damage, energy, engine, enginePower, weaponPower, shieldPower, xVel, xVelMax, yVel, yVelMax
   smallShip = new Specs("Ship-Small", -600, 0, 200, 100, 200, 200, 200, 200, 200, 50, 50, 100, 0, 5, 0, 5);
   userShip = new Ship("User", smallShip, -600, 0);
-  enemyShip = new Ship("enemy", smallShip, 600, 0);
+  enemyShip = new Ship("enemy", smallShip, 8000, 0);
   asteriods[0] = new Asteroid(8, 70);
 
   score = 0
@@ -217,11 +217,10 @@ function killShip(ship) {
   if (ship == "enemy") {
     score += 500;
     setTimeout(function () {
-      enemyShip = new Ship("enemy", 1500, 0);
+      enemyShip = new Ship("enemy", smallShip, 16000, 0);
     }, 600)
-  } else if (ship == "user") {
+  } else if (ship == "User") {
     setTimeout(function () {
-      //userShip = new Ship("user", -1500, 0);
       gameOver(0);
     }, 600)
   }
@@ -349,12 +348,4 @@ function setWindowSize() { // Resizes canvas and sets windowScale
 function fullScreen() {
   fs = fullscreen();
   fullscreen(!fs);
-}
-
-
-
-/****************************** Other *******************************/
-
-function test() { // temporary
-  console.log("timeout");
 }
